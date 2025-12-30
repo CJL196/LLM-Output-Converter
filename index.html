@@ -1,167 +1,910 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LLM-LaTeX-Converter</title>
+    <title>LLM Output Converter</title>
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            max-width: 900px;
-            margin-left: auto;
-            margin-right: auto;
-            background-color: #1e1e1e;
-            color: #e0e0e0;
-            transition: background-color 0.3s, color 0.3s;
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --accent: #6366f1;
+            --accent-hover: #818cf8;
+            --success: #22c55e;
+            --success-hover: #16a34a;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --border: #333;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
         }
-        h1 {
-            font-size: 2em;
-            color: #58a6ff;
+
+        body.light {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --border: #e2e8f0;
+            --glass-bg: rgba(0, 0, 0, 0.02);
+            --glass-border: rgba(0, 0, 0, 0.08);
         }
-        p {
-            font-size: 1.1em;
-            line-height: 1.5;
-            color: #b0b0b0;
-        }
-        .container {
-            margin-top: 20px;
-        }
-        textarea {
-            width: 100%;
-            height: 200px;
-            margin: 10px 0;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 1em;
-            background-color: #2d2d2d;
-            color: #e0e0e0;
-            border: 1px solid #444;
-            border-radius: 5px;
-            resize: vertical;
+
+        * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
-        textarea[readonly] {
-            background-color: #252525;
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            transition: all 0.3s ease;
         }
-        .button-group {
-            margin: 10px 0;
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
-        button {
-            padding: 10px 20px;
-            margin-right: 10px;
-            background-color: #58a6ff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background-color 0.3s;
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
         }
-        button:hover {
-            background-color: #1e90ff;
+
+        .logo-container {
+            margin-bottom: 20px;
+            display: inline-block;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
-        #copyBtn {
-            background-color: #28a745;
+
+        h1 {
+            font-size: 2.5em;
+            font-weight: 600;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
         }
-        #copyBtn:hover {
-            background-color: #218838;
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1em;
         }
-        #themeToggle {
-            position: absolute;
+
+        .theme-toggle {
+            position: fixed;
             top: 20px;
             right: 20px;
-            background-color: #444;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
         }
-        #themeToggle:hover {
-            background-color: #666;
+
+        .theme-toggle:hover {
+            background: var(--accent);
+            border-color: var(--accent);
         }
-        /* 浅色模式 */
-        body.light {
-            background-color: #f5f5f5;
-            color: #333;
+
+        .section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
         }
-        body.light h1 {
-            color: #007bff;
+
+        .section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        body.light p {
-            color: #666;
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(135deg, var(--accent), #a855f7);
+            border-radius: 2px;
         }
-        body.light textarea {
-            background-color: #fff;
-            color: #333;
-            border: 1px solid #ccc;
+
+        /* Add Rule Form */
+        .add-rule-form {
+            display: grid;
+            grid-template-columns: 1fr 2fr 2fr auto;
+            gap: 12px;
+            align-items: end;
         }
-        body.light textarea[readonly] {
-            background-color: #f8f8f8;
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
-        body.light button {
-            background-color: #007bff;
+
+        .form-group label {
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            font-weight: 500;
         }
-        body.light button:hover {
-            background-color: #0056b3;
+
+        input,
+        select,
+        textarea {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-family: inherit;
+            transition: all 0.2s ease;
         }
-        body.light #copyBtn {
-            background-color: #28a745;
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
         }
-        body.light #copyBtn:hover {
-            background-color: #218838;
+
+        textarea {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            resize: vertical;
+            min-height: 300px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        body.light #themeToggle {
-            background-color: #ccc;
+
+        /* Buttons */
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        body.light #themeToggle:hover {
-            background-color: #aaa;
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--success-hover);
+        }
+
+        .btn-danger {
+            background: transparent;
+            border: 1px solid var(--danger);
+            color: var(--danger);
+            padding: 8px 12px;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* Preset Templates */
+        .preset-section {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .preset-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Tooltip */
+        .tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: help;
+            transition: all 0.2s ease;
+        }
+
+        .info-icon:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            min-width: 280px;
+            max-width: 350px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transition: all 0.2s ease;
+            font-size: 0.9em;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-bottom-color: var(--border);
+        }
+
+        .info-icon:hover+.tooltip,
+        .tooltip:hover {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--accent);
+        }
+
+        .tooltip-example {
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 10px;
+            margin-top: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        .tooltip-code-block {
+            white-space: pre-wrap;
+            color: var(--text-primary);
+        }
+
+        .tooltip-example-label {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .tooltip-arrow {
+            color: var(--success);
+            margin: 4px 0;
+        }
+
+        /* Rules List */
+        .rules-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .rule-card {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .rule-card:hover {
+            border-color: var(--accent);
+        }
+
+        .rule-card.disabled {
+            opacity: 0.5;
+        }
+
+        .rule-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .rule-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .rule-pattern {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rule-pattern code {
+            background: var(--bg-primary);
+            padding: 4px 8px;
+            border-radius: 6px;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .rule-arrow {
+            color: var(--accent);
+        }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--border);
+            border-radius: 13px;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            position: absolute;
+            content: '';
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked+.toggle-slider {
+            background: var(--accent);
+        }
+
+        .toggle input:checked+.toggle-slider::before {
+            transform: translateX(22px);
+        }
+
+        /* Button Group */
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .add-rule-form {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .rule-pattern {
+                flex-direction: column;
+            }
+
+            .rule-pattern code {
+                max-width: 100%;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .rule-card {
+            animation: fadeIn 0.3s ease;
         }
     </style>
 </head>
+
 <body>
-    <button id="themeToggle" onclick="toggleTheme()">黑夜/白天</button>
-    <h1>LLM-LaTeX-Converter</h1>
-    <p>大模型一般会用 \(和\) 包裹行内公式，用 \[和\] 包裹公式块。</p>
-    <p>本站将 \(...\) 和 \[...\] 转换为 $...$ 和 $$...$$，以支持常见 Markdown 编辑器。</p>
-    
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+
     <div class="container">
-        <h3>输入文本</h3>
-        <textarea id="input" placeholder="在此输入包含 \(...\) 和 [...] 的文本"></textarea>
-        
-        <div class="button-group">
-            <button onclick="convert()">转换</button>
+        <header>
+            <div class="logo-container">
+                <img src="logo.svg" alt="LLM Markdown 修改工具 Logo" width="60" height="60">
+            </div>
+            <h1>LLM Output Converter</h1>
+            <p class="subtitle">借助正则表达式匹配替换，修改和优化大模型输出的 Markdown 内容</p>
+            <div class="header-links">
+                <a href="https://cjl196.github.io/llm-output-converter/" class="header-link" target="_blank">
+                    <i class="fas fa-globe"></i> 在线使用
+                </a>
+                <a href="https://github.com/cjl196/llm-latex-converter" class="header-link" target="_blank">
+                    <i class="fab fa-github"></i> GitHub
+                </a>
+            </div>
+        </header>
+
+        <!-- Preset Templates -->
+        <div class="section">
+            <div class="section-title">预设模板</div>
+            <div class="preset-section" id="presetButtons"></div>
         </div>
-        
-        <h3>输出文本</h3>
-        <textarea id="output" readonly placeholder="转换后的结果将显示在这里"></textarea>
-        
-        <div class="button-group">
-            <button id="copyBtn" onclick="copyToClipboard()">复制到剪贴板</button>
+
+        <!-- Add Custom Rule -->
+        <div class="section">
+            <div class="section-title">添加自定义规则</div>
+            <div class="add-rule-form">
+                <div class="form-group">
+                    <label>规则名称</label>
+                    <input type="text" id="ruleName" placeholder="例：替换空格">
+                </div>
+                <div class="form-group">
+                    <label>正则表达式</label>
+                    <input type="text" id="rulePattern" placeholder="例：\s+">
+                </div>
+                <div class="form-group">
+                    <label>替换内容</label>
+                    <input type="text" id="ruleReplacement" placeholder="例：-">
+                </div>
+                <button class="btn btn-primary" onclick="addCustomRule()">添加规则</button>
+            </div>
+        </div>
+
+        <!-- Active Rules -->
+        <div class="section">
+            <div class="section-title">当前规则</div>
+            <div class="rules-list" id="rulesList"></div>
+        </div>
+
+        <!-- Input/Output -->
+        <div class="section">
+            <div class="section-title">输入文本</div>
+            <textarea id="input" placeholder="在此输入需要转换的文本..." oninput="saveInputText()"></textarea>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="convert()">🔄 执行转换</button>
+                <button class="btn btn-secondary" onclick="clearInput()">清空输入</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">输出结果</div>
+            <textarea id="output" readonly placeholder="转换结果将显示在这里..."></textarea>
+            <div class="button-group">
+                <button class="btn btn-success" onclick="copyToClipboard()">📋 复制结果</button>
+            </div>
         </div>
     </div>
 
     <script>
-        function convert() {
-            const input = document.getElementById('input').value;
-            let output = input;
+        // Predefined templates
+        const PRESETS = [
+            {
+                name: 'LaTeX 行内公式',
+                pattern: '\\\\\\((.+?)\\\\\\)',
+                replacement: '$$$1$$',
+                description: '\\(...\\) → $...$',
+                detail: '将 \\( 和 \\) 包裹的行内公式替换为 $ 包裹的格式，适用于大多数 LLM 输出的 LaTeX 公式转换。',
+                exampleBefore: '质能方程 \\(E=mc^2\\) 很著名',
+                exampleAfter: '质能方程 $E=mc^2$ 很著名'
+            },
+            {
+                name: 'LaTeX 公式块',
+                pattern: '[ \\t]*\\\\\\[\\s*([\\s\\S]+?)\\s*\\\\\\]',
+                replacement: '$$$$\n$1\n$$$$',
+                description: '\\[...\\] → $$...$$',
+                detail: '将 \\[ 和 \\] 包裹的公式块替换为 $$ 包裹的格式，并自动添加换行和移除前导空格。',
+                exampleBefore: '    \\[\\int_0^1 x^2 dx\\]',
+                exampleAfter: '$$\n\\int_0^1 x^2 dx\n$$'
+            },
+            {
+                name: 'HTML 还原 &lt;',
+                pattern: '&lt;',
+                replacement: '<',
+                description: '&lt; → <',
+                detail: '将 HTML 实体 &lt; 还原为小于号 <，通常用于修复被过度转义的代码。',
+                exampleBefore: 'if (a &lt; b) { ... }',
+                exampleAfter: 'if (a < b) { ... }'
+            },
+            {
+                name: 'HTML 还原 &gt;',
+                pattern: '&gt;',
+                replacement: '>',
+                description: '&gt; → >',
+                detail: '将 HTML 实体 &gt; 还原为大于号 >，通常用于修复被过度转义的代码。',
+                exampleBefore: 'if (a &gt; b) { ... }',
+                exampleAfter: 'if (a > b) { ... }'
+            },
+            {
+                name: '多空格合并',
+                pattern: ' +',
+                replacement: ' ',
+                description: '多个空格 → 单个空格',
+                detail: '将连续的多个空格合并为单个空格，用于清理文本格式。',
+                exampleBefore: '这是    一段    文本',
+                exampleAfter: '这是 一段 文本'
+            },
+            {
+                name: '删除加粗',
+                pattern: '\\*\\*(.+?)\\*\\*',
+                replacement: '$1',
+                description: '**...** → ...',
+                detail: '移除 Markdown 加粗标记，保留文字内容。',
+                exampleBefore: '这是 **加粗** 文字',
+                exampleAfter: '这是 加粗 文字'
+            },
+            {
+                name: '删除分割线',
+                pattern: '^\\s*-{3,}\\s*$\\n?',
+                replacement: '',
+                description: '--- → (empty)',
+                detail: '移除 Markdown 分割线（由3个或更多连字符组成的行）。',
+                exampleBefore: '第一段\n---\n第二段',
+                exampleAfter: '第一段\n第二段'
+            },
+            {
+                name: '删除引用',
+                pattern: '\\[cite_start\\](.*?)\\[cite:\\s*[\\d,\\s]+\\]',
+                replacement: '$1',
+                description: '[cite_start]...[cite:...] → ...',
+                detail: '移除特定格式的引用标记，保留被引用的文本内容。',
+                exampleBefore: '文本 [cite_start]参考[cite: 1, 2] 结束',
+                exampleAfter: '文本 参考 结束'
+            },
+            {
+                name: '删除空行',
+                pattern: '^\\s*$\\n?',
+                replacement: '',
+                description: '移除空白行',
+                detail: '删除文本中的空白行（包括只包含空格和制表符的行），使文本更紧凑。',
+                exampleBefore: '第一行\n\n\n第二行',
+                exampleAfter: '第一行\n第二行'
+            }
+        ];
 
-            // 替换行内公式 \(...\) 为 $...$
-            output = output.replace(/\\\((.*?)\\\)/g, '$$$1$$');
-            
-            // 替换公式块 [...] 为 $$...$$
-            output = output.replace(/\\\[(.*?)\\\]/gs, '$$$$$1$$$$');
+        // State
+        let rules = [];
 
-            document.getElementById('output').value = output;
+        // Initialize
+        function init() {
+            loadRules();
+            loadInputText();
+            renderPresets();
+            renderRules();
         }
 
+        // Save and load input text
+        function saveInputText() {
+            localStorage.setItem('inputText', document.getElementById('input').value);
+        }
+
+        function loadInputText() {
+            const saved = localStorage.getItem('inputText');
+            if (saved) {
+                document.getElementById('input').value = saved;
+            }
+        }
+
+        // LocalStorage
+        function saveRules() {
+            localStorage.setItem('regexRules', JSON.stringify(rules));
+        }
+
+        function loadRules() {
+            const saved = localStorage.getItem('regexRules');
+            if (saved) {
+                rules = JSON.parse(saved);
+            }
+        }
+
+        // Render preset buttons
+        function renderPresets() {
+            const container = document.getElementById('presetButtons');
+            container.innerHTML = PRESETS.map((preset, index) => `
+                <div class="tooltip-container">
+                    <button class="preset-btn" onclick="addPreset(${index})">
+                        ➕ ${preset.name}
+                    </button>
+                    <span class="info-icon">i</span>
+                    <div class="tooltip">
+                        <div class="tooltip-title">${preset.name}</div>
+                        <div>${preset.detail}</div>
+                        <div class="tooltip-example">
+                            <div class="tooltip-example-label">转换前：</div>
+                            <div class="tooltip-code-block">${escapeHtml(preset.exampleBefore)}</div>
+                            <div class="tooltip-arrow">↓</div>
+                            <div class="tooltip-example-label">转换后：</div>
+                            <div class="tooltip-code-block">${escapeHtml(preset.exampleAfter)}</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add preset rule
+        function addPreset(index) {
+            const preset = PRESETS[index];
+            // Check if already added
+            const exists = rules.some(r => r.name === preset.name);
+            if (exists) {
+                alert('该规则已存在！');
+                return;
+            }
+            rules.push({
+                id: Date.now(),
+                name: preset.name,
+                pattern: preset.pattern,
+                replacement: preset.replacement,
+                enabled: true
+            });
+            saveRules();
+            renderRules();
+        }
+
+        // Add custom rule
+        function addCustomRule() {
+            const name = document.getElementById('ruleName').value.trim();
+            const pattern = document.getElementById('rulePattern').value;
+            const replacement = document.getElementById('ruleReplacement').value;
+
+            if (!name || !pattern) {
+                alert('请填写规则名称和正则表达式！');
+                return;
+            }
+
+            // Validate regex
+            try {
+                new RegExp(pattern, 'g');
+            } catch (e) {
+                alert('正则表达式格式错误：' + e.message);
+                return;
+            }
+
+            rules.push({
+                id: Date.now(),
+                name,
+                pattern,
+                replacement,
+                enabled: true
+            });
+
+            // Clear form
+            document.getElementById('ruleName').value = '';
+            document.getElementById('rulePattern').value = '';
+            document.getElementById('ruleReplacement').value = '';
+
+            saveRules();
+            renderRules();
+        }
+
+        // Render rules list
+        function renderRules() {
+            const container = document.getElementById('rulesList');
+
+            if (rules.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📝</div>
+                        <p>暂无规则，请从预设模板中选择或添加自定义规则</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = rules.map(rule => `
+                <div class="rule-card ${rule.enabled ? '' : 'disabled'}">
+                    <label class="toggle">
+                        <input type="checkbox" ${rule.enabled ? 'checked' : ''} onchange="toggleRule(${rule.id})">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <div class="rule-info">
+                        <div class="rule-name">${escapeHtml(rule.name)}</div>
+                        <div class="rule-pattern">
+                            <code title="${escapeHtml(rule.pattern)}">${escapeHtml(rule.pattern)}</code>
+                            <span class="rule-arrow">→</span>
+                            <code title="${escapeHtml(rule.replacement)}">${escapeHtml(rule.replacement) || '(空)'}</code>
+                        </div>
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteRule(${rule.id})">删除</button>
+                </div>
+            `).join('');
+        }
+
+        // Toggle rule enabled state
+        function toggleRule(id) {
+            const rule = rules.find(r => r.id === id);
+            if (rule) {
+                rule.enabled = !rule.enabled;
+                saveRules();
+                renderRules();
+            }
+        }
+
+        // Delete rule
+        function deleteRule(id) {
+            rules = rules.filter(r => r.id !== id);
+            saveRules();
+            renderRules();
+        }
+
+        // Convert text
+        function convert() {
+            let text = document.getElementById('input').value;
+            const enabledRules = rules.filter(r => r.enabled);
+
+            if (enabledRules.length === 0) {
+                alert('请先添加至少一条启用的规则！');
+                return;
+            }
+
+            for (const rule of enabledRules) {
+                try {
+                    const regex = new RegExp(rule.pattern, 'gm');
+                    text = text.replace(regex, rule.replacement);
+                } catch (e) {
+                    console.error(`规则 "${rule.name}" 执行失败:`, e);
+                }
+            }
+
+            document.getElementById('output').value = text;
+        }
+
+        // Copy to clipboard
         function copyToClipboard() {
             const output = document.getElementById('output');
             output.select();
             document.execCommand('copy');
-            // alert('已复制到剪贴板');
+
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ 已复制';
+            setTimeout(() => btn.textContent = originalText, 1500);
         }
 
+        // Clear input
+        function clearInput() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').value = '';
+        }
+
+        // Theme toggle
         function toggleTheme() {
             document.body.classList.toggle('light');
+            localStorage.setItem('theme', document.body.classList.contains('light') ? 'light' : 'dark');
         }
+
+        // Load saved theme
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light');
+        }
+
+        // Escape HTML for display
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Initialize on load
+        init();
     </script>
 </body>
+
 </html>

@@ -1,0 +1,32 @@
+<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="pencilBody" x1="140" y1="40" x2="80" y2="100" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFD700"/>
+            <stop offset="1" stop-color="#FFA500"/>
+        </linearGradient>
+        <linearGradient id="wood" x1="80" y1="100" x2="60" y2="120" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#DEB887"/>
+            <stop offset="1" stop-color="#CD853F"/>
+        </linearGradient>
+        <linearGradient id="eraser" x1="40" y1="60" x2="80" y2="20" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FF69B4"/>
+            <stop offset="1" stop-color="#FF1493"/>
+        </linearGradient>
+        <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+            <feDropShadow dx="2" dy="4" stdDeviation="4" flood-opacity="0.3"/>
+        </filter>
+    </defs>
+
+    <!-- Eraser (Pink block) -->
+    <g transform="rotate(-45 100 100)">
+        <rect x="70" y="30" width="60" height="40" rx="4" fill="url(#eraser)" filter="url(#shadow)"/>
+        <!-- Pencil Body -->
+        <rect x="70" y="70" width="60" height="80" fill="url(#pencilBody)" filter="url(#shadow)"/>
+        <!-- Metal Band -->
+        <rect x="70" y="65" width="60" height="10" fill="#C0C0C0"/>
+        <!-- Wood tip -->
+        <path d="M70 150 L100 190 L130 150 Z" fill="url(#wood)"/>
+        <!-- Lead -->
+        <path d="M94 182 L100 190 L106 182 Z" fill="#333"/>
+    </g>
+</svg>
