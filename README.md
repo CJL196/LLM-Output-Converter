@@ -1,6 +1,6 @@
-# LLM Output Converter
+# <img src="./logo.svg" width="34" style="vertical-align: middle;"> LLM Output Converter
 
-[在线使用](https://cjl196.github.io/llm-output-converter/) | [GitHub 项目](https://github.com/cjl196/llm-latex-converter)
+[在线使用](https://cjl196.github.io/LLM-Output-Converter/) | [GitHub 项目](https://github.com/CJL196/LLM-Output-Converter)
 
 LLM输出文本修复与优化工具，专为处理LLM输出的格式问题而设计。借助正则表达式匹配替换功能，它可以帮助你一键修复 LaTeX 公式、还原 HTML 实体、清理多余格式等。
 
@@ -26,7 +26,7 @@ LLM输出文本修复与优化工具，专为处理LLM输出的格式问题而�
 
 ## 🚀 使用方法
 
-1. 打开 [在线工具](https://cjl196.github.io/llm-output-converter/)
+1. 打开 [在线工具](https://github.com/CJL196/LLM-Output-Converter/)
 2. 在左侧面板选择需要启用的预设规则
 3. (可选) 添加自定义正则替换规则
 4. 将待处理的文本粘贴到输入框
