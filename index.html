@@ -532,12 +532,13 @@
             </div>
             <h1>LLM Output Converter</h1>
             <p class="subtitle">借助正则表达式匹配替换，修改和优化大模型输出的 Markdown 内容</p>
+            <br>
             <div class="header-links">
-                <a href="https://cjl196.github.io/LLM-Output-Converter/" class="header-link" target="_blank">
-                    <i class="fas fa-globe"></i> 在线使用
+                <a href="https://cjl196.github.io/LLM-Output-Converter/" target="_blank" style="text-decoration: none;">
+                    <img src="https://img.shields.io/badge/Online-Demo-green" alt="Online Demo">
                 </a>
-                <a href="https://github.com/CJL196/LLM-Output-Converter" class="header-link" target="_blank">
-                    <i class="fab fa-github"></i> GitHub
+                <a href="https://github.com/CJL196/LLM-Output-Converter" target="_blank" style="text-decoration: none;">
+                    <img src="https://img.shields.io/badge/GitHub-Repo-black" alt="GitHub Repo">
                 </a>
             </div>
         </header>
@@ -546,6 +547,22 @@
         <div class="section">
             <div class="section-title">预设模板</div>
             <div class="preset-section" id="presetButtons"></div>
+        </div>
+
+        <!-- Header Tools -->
+        <div class="section">
+            <div class="section-title">标题层级工具</div>
+            <div class="add-rule-form" style="grid-template-columns: 1fr auto auto; align-items: center;">
+                <div class="form-group">
+                    <label>调整级别 (N)</label>
+                    <input type="number" id="headerLevelN" min="1" max="5" value="1" placeholder="1-5">
+                </div>
+                <button class="btn btn-secondary" onclick="addHeaderRule('promote')">⬆️ 生成提升 N 级规则</button>
+                <button class="btn btn-secondary" onclick="addHeaderRule('demote')">⬇️ 生成降低 N 级规则</button>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.85em; color: var(--text-secondary);">
+                快速生成用于批量调整标题层级的规则。支持 1-5 级的大幅度调整。
+            </div>
         </div>
 
         <!-- Add Custom Rule -->
@@ -565,6 +582,32 @@
                     <input type="text" id="ruleReplacement" placeholder="例：-">
                 </div>
                 <button class="btn btn-primary" onclick="addCustomRule()">添加规则</button>
+            </div>
+        </div>
+
+        <!-- Global Settings -->
+        <div class="section">
+            <div class="section-title">全局设置</div>
+            <div class="rule-card">
+                <label class="toggle">
+                    <input type="checkbox" id="protectCode" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <div class="rule-info" style="display: flex; align-items: center; gap: 8px;">
+                    <div class="rule-name" style="margin-bottom: 0;">保护代码块</div>
+                    <div class="tooltip-container">
+                        <span class="info-icon">i</span>
+                        <div class="tooltip">
+                            <div class="tooltip-title">保护代码块</div>
+                            <div>开启后，将自动忽略被反引号包裹的内容（包括行内代码 <code>`...`</code> 和代码块 <code>```...```</code>），防止其被规则误修改。
+                            </div>
+                            <div class="tooltip-example">
+                                <div class="tooltip-example-label">示例：</div>
+                                <div class="tooltip-code-block">`const a = 1;` 将保持原样，不会被应用任何替换规则。</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -676,6 +719,15 @@
                 detail: '删除文本中的空白行（包括只包含空格和制表符的行），使文本更紧凑。',
                 exampleBefore: '第一行\n\n\n第二行',
                 exampleAfter: '第一行\n第二行'
+            },
+            {
+                name: '移除所有标题',
+                pattern: '^#{1,6}\\s+(.*)',
+                replacement: '$1',
+                description: '# Title → Title',
+                detail: '移除所有 Markdown 标题，将其转换为普通文本。',
+                exampleBefore: '## 二级标题',
+                exampleAfter: '二级标题'
             }
         ];
 
@@ -738,22 +790,95 @@
             `).join('');
         }
 
+        // Add header level rules dynamically
+        function addHeaderRule(type) {
+            const nInput = document.getElementById('headerLevelN');
+            const n = parseInt(nInput.value, 10);
+
+            if (isNaN(n) || n < 1 || n > 5) {
+                alert('请输入 1 到 5 之间的整数！');
+                return;
+            }
+
+            if (type === 'promote') {
+                // Promote logic: remove 1 to n hashes
+                // Uses the robust regex: ^#{1,n}(\s+|(?=#))
+                // - If H1-Hn (becoming text): matches hashes + following space
+                // - If H(n+1)+ (reducing level): matches n hashes, lookahead ensures another hash follows
+                rules.push({
+                    id: Date.now(),
+                    name: `标题提升 ${n} 级`,
+                    pattern: `^#{1,${n}}(\\s+|(?=#))`,
+                    replacement: '',
+                    enabled: true
+                });
+
+            } else if (type === 'demote') {
+                // Demote logic: add N hashes
+                // 1. Remove overflow headers: H(7-n) to H6 -> Text
+                // Because Markdown only supports up to H6
+                const overflowStart = 7 - n;
+
+                // We use a multi-item preset approach to ensure correct order
+                // Only add the overflow rule if it's possible for headers to overflow
+                if (overflowStart <= 6) {
+                    rules.push({
+                        id: Date.now(),
+                        name: `标题降低 ${n} 级 (移除 H${overflowStart}+)`,
+                        pattern: `^#{${overflowStart},6}\\s+(.*)`,
+                        replacement: '$1',
+                        enabled: true
+                    });
+                }
+
+                // 2. Add n hashes to remaining headers (H1 to H(6-n))
+                const maxDemotableLevel = 6 - n;
+                if (maxDemotableLevel >= 1) {
+                    rules.push({
+                        id: Date.now() + 1,
+                        name: `标题降低 ${n} 级 (H1-H${maxDemotableLevel} 降级)`,
+                        pattern: `^(#{1,${maxDemotableLevel}})(\\s)`,
+                        replacement: '#'.repeat(n) + '$1$2',
+                        enabled: true
+                    });
+                }
+            }
+
+            saveRules();
+            renderRules();
+        }
+
         // Add preset rule
         function addPreset(index) {
             const preset = PRESETS[index];
-            // Check if already added
-            const exists = rules.some(r => r.name === preset.name);
-            if (exists) {
-                alert('该规则已存在！');
-                return;
+
+            // Handle multi-rule presets
+            if (preset.rules) {
+                preset.rules.forEach(rule => {
+                    rules.push({
+                        id: Date.now() + Math.random(), // Ensure unique IDs
+                        name: rule.name || preset.name,
+                        pattern: rule.pattern,
+                        replacement: rule.replacement,
+                        enabled: true
+                    });
+                });
+            } else {
+                // Check if already added (only for single rules)
+                const exists = rules.some(r => r.name === preset.name);
+                if (exists) {
+                    alert('该规则已存在！');
+                    return;
+                }
+                rules.push({
+                    id: Date.now(),
+                    name: preset.name,
+                    pattern: preset.pattern,
+                    replacement: preset.replacement,
+                    enabled: true
+                });
             }
-            rules.push({
-                id: Date.now(),
-                name: preset.name,
-                pattern: preset.pattern,
-                replacement: preset.replacement,
-                enabled: true
-            });
+
             saveRules();
             renderRules();
         }
@@ -848,12 +973,35 @@
         function convert() {
             let text = document.getElementById('input').value;
             const enabledRules = rules.filter(r => r.enabled);
+            const protectCode = document.getElementById('protectCode').checked;
 
             if (enabledRules.length === 0) {
                 alert('请先添加至少一条启用的规则！');
                 return;
             }
 
+            let placeholders = [];
+            let uniquePrefix = '';
+
+            // Step 1: Mask code blocks if enabled
+            if (protectCode) {
+                // This prevents rules from modifying content inside `code` or ```code blocks```
+                // Use a unique prefix to avoid collision with user text
+                uniquePrefix = `__CODE_BLOCK_${Date.now()}_`;
+
+                // Regex to match backtick-wrapped content:
+                // (`+) captures the opening backticks (1 or more)
+                // ([\s\S]*?) matches the content non-greedily
+                // \1 ensures the closing backticks match the opening length
+                const codeRegex = /(`+)([\s\S]*?)\1/g;
+
+                text = text.replace(codeRegex, (match) => {
+                    placeholders.push(match);
+                    return `${uniquePrefix}${placeholders.length - 1}__`;
+                });
+            }
+
+            // Step 2: Apply rules
             for (const rule of enabledRules) {
                 try {
                     const regex = new RegExp(rule.pattern, 'gm');
@@ -861,6 +1009,17 @@
                 } catch (e) {
                     console.error(`规则 "${rule.name}" 执行失败:`, e);
                 }
+            }
+
+            // Step 3: Unmask code blocks if enabled
+            if (protectCode) {
+                // Use a regex to find all placeholders and restore original content
+                const unmaskRegex = new RegExp(`${uniquePrefix}(\\d+)__`, 'g');
+                text = text.replace(unmaskRegex, (match, index) => {
+                    const code = placeholders[parseInt(index, 10)];
+                    // Use function return to prevent special patterns in code (like $&) from being interpreted
+                    return code || match;
+                });
             }
 
             document.getElementById('output').value = text;
