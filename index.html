@@ -704,11 +704,11 @@
             },
             {
                 name: '删除引用',
-                pattern: '\\[cite_start\\](.*?)\\[cite:\\s*[\\d,\\s]+\\]',
+                pattern: '\\[cite_start\\](.*?)\\[cite:\\s*[\\d,\\s-]+\\]',
                 replacement: '$1',
                 description: '[cite_start]...[cite:...] → ...',
                 detail: '移除特定格式的引用标记，保留被引用的文本内容。',
-                exampleBefore: '文本 [cite_start]参考[cite: 1, 2] 结束',
+                exampleBefore: '文本 [cite_start]参考[cite: 78-116] 结束',
                 exampleAfter: '文本 参考 结束'
             },
             {
