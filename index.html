@@ -7,6 +7,7 @@
     <title>LLM Output Converter</title>
     <link rel="icon" type="image/svg+xml" href="logo.svg">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <style>
         :root {
             --bg-primary: #0f0f0f;
@@ -23,6 +24,8 @@
             --border: #333;
             --glass-bg: rgba(255, 255, 255, 0.05);
             --glass-border: rgba(255, 255, 255, 0.1);
+            --code-bg: #0b0b0b;
+            --code-inline-bg: rgba(255, 255, 255, 0.08);
         }
 
         body.light {
@@ -36,6 +39,8 @@
             --border: #e2e8f0;
             --glass-bg: rgba(0, 0, 0, 0.02);
             --glass-border: rgba(0, 0, 0, 0.08);
+            --code-bg: #f1f5f9;
+            --code-inline-bg: rgba(15, 23, 42, 0.08);
         }
 
         * {
@@ -179,6 +184,101 @@
             min-height: 300px;
             width: 100%;
             box-sizing: border-box;
+        }
+
+        .markdown-preview {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 300px;
+            line-height: 1.7;
+        }
+
+        .markdown-preview>*+* {
+            margin-top: 12px;
+        }
+
+        .markdown-preview ul,
+        .markdown-preview ol {
+            padding-left: 22px;
+            margin: 8px 0;
+            list-style-position: outside;
+        }
+
+        .markdown-preview li {
+            margin: 6px 0;
+        }
+
+        .markdown-preview ul ul,
+        .markdown-preview ul ol,
+        .markdown-preview ol ul,
+        .markdown-preview ol ol {
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        .markdown-preview h1,
+        .markdown-preview h2,
+        .markdown-preview h3,
+        .markdown-preview h4,
+        .markdown-preview h5,
+        .markdown-preview h6 {
+            margin-top: 18px;
+            margin-bottom: 8px;
+        }
+
+        .markdown-preview code {
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            background: var(--code-inline-bg);
+            padding: 2px 6px;
+            border-radius: 6px;
+        }
+
+        .markdown-preview pre {
+            background: var(--code-bg);
+            padding: 14px 16px;
+            border-radius: 10px;
+            overflow: auto;
+        }
+
+        .markdown-preview pre code {
+            background: transparent;
+            padding: 0;
+        }
+
+        .markdown-preview blockquote {
+            border-left: 3px solid var(--accent);
+            padding-left: 12px;
+            color: var(--text-secondary);
+        }
+
+        .markdown-preview table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .markdown-preview th,
+        .markdown-preview td {
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+        }
+
+        .markdown-preview a {
+            color: var(--accent);
+        }
+
+        .markdown-preview hr {
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        .markdown-preview img {
+            max-width: 100%;
+        }
+
+        .markdown-preview .katex {
+            color: inherit;
         }
 
         /* Buttons */
@@ -590,7 +690,7 @@
             <div class="section-title">全局设置</div>
             <div class="rule-card">
                 <label class="toggle">
-                    <input type="checkbox" id="protectCode" checked>
+                    <input type="checkbox" id="protectCode" checked onchange="updateOutputAndPreview({ silent: true })">
                     <span class="toggle-slider"></span>
                 </label>
                 <div class="rule-info" style="display: flex; align-items: center; gap: 8px;">
@@ -620,7 +720,7 @@
         <!-- Input/Output -->
         <div class="section">
             <div class="section-title">输入文本</div>
-            <textarea id="input" placeholder="在此输入需要转换的文本..." oninput="saveInputText()"></textarea>
+            <textarea id="input" placeholder="在此输入需要转换的文本..." oninput="handleInputChange()"></textarea>
             <div class="button-group">
                 <button class="btn btn-primary" onclick="convert()">🔄 执行转换</button>
                 <button class="btn btn-secondary" onclick="clearInput()">清空输入</button>
@@ -634,7 +734,16 @@
                 <button class="btn btn-success" onclick="copyToClipboard()">📋 复制结果</button>
             </div>
         </div>
+
+        <div class="section">
+            <div class="section-title">Markdown 预览</div>
+            <div id="preview" class="markdown-preview">实时渲染中...</div>
+        </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
     <script>
         // Predefined templates
@@ -740,6 +849,8 @@
             loadInputText();
             renderPresets();
             renderRules();
+            setupMarkdown();
+            updateOutputAndPreview({ silent: true });
         }
 
         // Save and load input text
@@ -846,6 +957,7 @@
 
             saveRules();
             renderRules();
+            updateOutputAndPreview({ silent: true });
         }
 
         // Add preset rule
@@ -881,6 +993,7 @@
 
             saveRules();
             renderRules();
+            updateOutputAndPreview({ silent: true });
         }
 
         // Add custom rule
@@ -917,6 +1030,7 @@
 
             saveRules();
             renderRules();
+            updateOutputAndPreview({ silent: true });
         }
 
         // Render rules list
@@ -959,6 +1073,7 @@
                 rule.enabled = !rule.enabled;
                 saveRules();
                 renderRules();
+                updateOutputAndPreview({ silent: true });
             }
         }
 
@@ -967,17 +1082,36 @@
             rules = rules.filter(r => r.id !== id);
             saveRules();
             renderRules();
+            updateOutputAndPreview({ silent: true });
+        }
+
+        function handleInputChange() {
+            saveInputText();
+            updateOutputAndPreview({ silent: true });
         }
 
         // Convert text
         function convert() {
+            updateOutputAndPreview({ silent: false });
+        }
+
+        function updateOutputAndPreview(options = {}) {
+            const outputText = convertText(options);
+            document.getElementById('output').value = outputText;
+            renderMarkdown(outputText);
+        }
+
+        function convertText(options = {}) {
+            const { silent = false } = options;
             let text = document.getElementById('input').value;
             const enabledRules = rules.filter(r => r.enabled);
             const protectCode = document.getElementById('protectCode').checked;
 
             if (enabledRules.length === 0) {
-                alert('请先添加至少一条启用的规则！');
-                return;
+                if (!silent) {
+                    alert('请先添加至少一条启用的规则！');
+                }
+                return text;
             }
 
             let placeholders = [];
@@ -1022,7 +1156,42 @@
                 });
             }
 
-            document.getElementById('output').value = text;
+            return text;
+        }
+
+        function setupMarkdown() {
+            if (!window.marked) {
+                return;
+            }
+
+            marked.setOptions({
+                gfm: true,
+                breaks: true,
+                langPrefix: 'language-'
+            });
+        }
+
+        function renderMarkdown(markdownText) {
+            const preview = document.getElementById('preview');
+            if (!window.marked) {
+                preview.textContent = markdownText || '';
+                return;
+            }
+
+            preview.innerHTML = marked.parse(markdownText || '');
+
+            if (window.renderMathInElement) {
+                renderMathInElement(preview, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\\\(', right: '\\\\)', display: false },
+                        { left: '\\\\[', right: '\\\\]', display: true }
+                    ],
+                    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+                    throwOnError: false
+                });
+            }
         }
 
         // Copy to clipboard
@@ -1041,6 +1210,8 @@
         function clearInput() {
             document.getElementById('input').value = '';
             document.getElementById('output').value = '';
+            saveInputText();
+            renderMarkdown('');
         }
 
         // Theme toggle
