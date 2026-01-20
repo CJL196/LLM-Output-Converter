@@ -1,6 +1,6 @@
 # <img src="./logo.svg" width="34" style="vertical-align: middle;"> LLM Output Converter
 
-[![Online Demo](https://img.shields.io/badge/Online-Demo-green)](https://cjl196.github.io/LLM-Output-Converter/)
+[![在线使用](https://img.shields.io/badge/Online-Demo-green)](https://cjl196.github.io/LLM-Output-Converter/)
 [![License](https://img.shields.io/badge/License-MIT-blue)](https://github.com/CJL196/LLM-Output-Converter)
 [![GitHub Repo](https://img.shields.io/badge/GitHub-Repo-black)](https://github.com/CJL196/LLM-Output-Converter)
 
@@ -35,7 +35,7 @@ LLM输出文本修复与优化工具，专为处理LLM输出的格式问题而�
 
 ## 🚀 使用方法
 
-1. 打开 [在线工具](https://github.com/CJL196/LLM-Output-Converter/)
+1. 打开 [在线工具](https://cjl196.github.io/LLM-Output-Converter/)
 2. 在左侧面板选择需要启用的预设规则
 3. (可选) 在 **标题层级工具** 中调整标题级别
 4. (可选) 在 **全局设置** 中配置代码保护开关
