@@ -49,61 +49,210 @@
             padding: 0;
         }
 
+        html, body {
+            height: 100%;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary);
             color: var(--text-primary);
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
             transition: all 0.3s ease;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 20px;
+        /* App Layout */
+        .app-layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .logo-container {
-            margin-bottom: 20px;
-            display: inline-block;
-            padding: 15px;
+        /* Left Sidebar */
+        .sidebar {
+            width: 440px;
+            min-width: 280px;
             background: var(--bg-secondary);
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
-        h1 {
-            font-size: 2.5em;
+        /* Resize Handle */
+        .resize-handle {
+            width: 4px;
+            cursor: col-resize;
+            background: transparent;
+            transition: background 0.15s ease;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 10;
+            margin-left: -2px;
+            margin-right: -2px;
+        }
+
+        .resize-handle:hover,
+        .resize-handle.dragging {
+            background: var(--accent);
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header .logo-container {
+            display: inline-flex;
+            padding: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .sidebar-header .header-text h1 {
+            font-size: 1.2em;
             font-weight: 600;
             background: linear-gradient(135deg, var(--accent), #a855f7);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 10px;
+            margin-bottom: 2px;
+            line-height: 1.2;
         }
 
-        .subtitle {
+        .sidebar-header .subtitle {
             color: var(--text-secondary);
-            font-size: 1.1em;
+            font-size: 0.75em;
+            line-height: 1.3;
+        }
+
+        .sidebar-header .header-links {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .sidebar-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        /* Right Main Panel */
+        .main-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0;
+        }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            align-items: center;
+            padding: 0 12px;
+        }
+
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--glass-bg);
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        .tab-actions {
+            margin-left: auto;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .tab-content {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .tab-content.active {
+            display: flex;
+        }
+
+        .tab-content textarea {
+            flex: 1;
+            border: none;
+            border-radius: 0;
+            resize: none;
+            min-height: 0;
+            padding: 20px;
+            font-size: 0.9em;
+            background: var(--bg-primary);
+        }
+
+        .tab-content textarea:focus {
+            box-shadow: none;
+            border-color: transparent;
+        }
+
+        .tab-content .markdown-preview {
+            flex: 1;
+            overflow-y: auto;
+            border: none;
+            border-radius: 0;
+            padding: 20px;
+            min-height: 0;
+            background: var(--bg-primary);
         }
 
         .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
             background: var(--bg-tertiary);
             border: 1px solid var(--border);
             color: var(--text-primary);
-            padding: 10px 16px;
-            border-radius: 10px;
+            padding: 6px 10px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.8em;
             transition: all 0.2s ease;
         }
 
@@ -113,17 +262,17 @@
         }
 
         .section {
-            background: var(--bg-secondary);
+            background: var(--bg-tertiary);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
         }
 
         .section-title {
-            font-size: 1.1em;
+            font-size: 0.95em;
             font-weight: 600;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
             gap: 8px;
@@ -131,18 +280,17 @@
 
         .section-title::before {
             content: '';
-            width: 4px;
-            height: 20px;
+            width: 3px;
+            height: 16px;
             background: linear-gradient(135deg, var(--accent), #a855f7);
             border-radius: 2px;
         }
 
         /* Add Rule Form */
         .add-rule-form {
-            display: grid;
-            grid-template-columns: 1fr 2fr 2fr auto;
-            gap: 12px;
-            align-items: end;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .form-group {
@@ -181,7 +329,7 @@
         textarea {
             font-family: 'JetBrains Mono', 'Fira Code', monospace;
             resize: vertical;
-            min-height: 300px;
+            min-height: 100px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -191,7 +339,7 @@
             border: 1px solid var(--border);
             border-radius: 12px;
             padding: 16px;
-            min-height: 300px;
+            min-height: 100px;
             line-height: 1.7;
         }
 
@@ -340,18 +488,17 @@
         /* Preset Templates */
         .preset-section {
             display: flex;
-            gap: 12px;
+            gap: 8px;
             flex-wrap: wrap;
-            margin-bottom: 20px;
         }
 
         .preset-btn {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-primary);
-            padding: 10px 16px;
-            border-radius: 20px;
-            font-size: 0.9em;
+            padding: 7px 12px;
+            border-radius: 16px;
+            font-size: 0.82em;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -396,36 +543,22 @@
         .tooltip {
             visibility: hidden;
             opacity: 0;
-            position: absolute;
-            top: calc(100% + 10px);
-            left: 50%;
-            transform: translateX(-50%);
+            position: fixed;
             background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 10px;
             padding: 12px 16px;
-            min-width: 280px;
-            max-width: 350px;
+            min-width: 260px;
+            max-width: 320px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
+            z-index: 9999;
             transition: all 0.2s ease;
-            font-size: 0.9em;
+            font-size: 0.85em;
             line-height: 1.5;
             text-align: left;
         }
 
-        .tooltip::after {
-            content: '';
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            border: 8px solid transparent;
-            border-bottom-color: var(--border);
-        }
-
-        .info-icon:hover+.tooltip,
-        .tooltip:hover {
+        .tooltip.visible {
             visibility: visible;
             opacity: 1;
         }
@@ -586,12 +719,22 @@
 
         /* Responsive */
         @media (max-width: 768px) {
-            .add-rule-form {
-                grid-template-columns: 1fr;
+            .app-layout {
+                flex-direction: column;
             }
 
-            h1 {
-                font-size: 1.8em;
+            .sidebar {
+                width: 100%;
+                min-width: 0;
+                height: auto;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .main-panel {
+                flex: 1;
+                min-height: 0;
             }
 
             .rule-pattern {
@@ -623,122 +766,134 @@
 </head>
 
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
-
-    <div class="container">
-        <header>
-            <div class="logo-container">
-                <img src="logo.svg" alt="LLM Markdown 修改工具 Logo" width="60" height="60">
-            </div>
-            <h1>LLM Output Converter</h1>
-            <p class="subtitle">借助正则表达式匹配替换，修改和优化大模型输出的 Markdown 内容</p>
-            <br>
-            <div class="header-links">
-                <a href="https://cjl196.github.io/LLM-Output-Converter/" target="_blank" style="text-decoration: none;">
-                    <img src="https://img.shields.io/badge/Online-Demo-green" alt="Online Demo">
-                </a>
-                <a href="https://github.com/CJL196/LLM-Output-Converter" target="_blank" style="text-decoration: none;">
-                    <img src="https://img.shields.io/badge/GitHub-Repo-black" alt="GitHub Repo">
-                </a>
-            </div>
-        </header>
-
-        <!-- Preset Templates -->
-        <div class="section">
-            <div class="section-title">预设模板</div>
-            <div class="preset-section" id="presetButtons"></div>
-        </div>
-
-        <!-- Header Tools -->
-        <div class="section">
-            <div class="section-title">标题层级工具</div>
-            <div class="add-rule-form" style="grid-template-columns: 1fr auto auto; align-items: center;">
-                <div class="form-group">
-                    <label>调整级别 (N)</label>
-                    <input type="number" id="headerLevelN" min="1" max="5" value="1" placeholder="1-5">
+    <div class="app-layout">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <img src="logo.svg" alt="LLM Markdown 修改工具 Logo" width="36" height="36">
                 </div>
-                <button class="btn btn-secondary" onclick="addHeaderRule('promote')">⬆️ 生成提升 N 级规则</button>
-                <button class="btn btn-secondary" onclick="addHeaderRule('demote')">⬇️ 生成降低 N 级规则</button>
+                <div class="header-text">
+                    <h1>LLM Output Converter</h1>
+                    <p class="subtitle">借助正则表达式匹配替换，修改和优化大模型输出的 Markdown 内容</p>
+                    <div class="header-links">
+                        <a href="https://cjl196.github.io/LLM-Output-Converter/" target="_blank" style="text-decoration: none;">
+                            <img src="https://img.shields.io/badge/Online-Demo-green" alt="Online Demo">
+                        </a>
+                        <a href="https://github.com/CJL196/LLM-Output-Converter" target="_blank" style="text-decoration: none;">
+                            <img src="https://img.shields.io/badge/GitHub-Repo-black" alt="GitHub Repo">
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div style="margin-top: 8px; font-size: 0.85em; color: var(--text-secondary);">
-                快速生成用于批量调整标题层级的规则。支持 1-5 级的大幅度调整。
-            </div>
-        </div>
+            <div class="sidebar-scroll">
+                <!-- Preset Templates -->
+                <div class="section">
+                    <div class="section-title">预设模板</div>
+                    <div class="preset-section" id="presetButtons"></div>
+                </div>
 
-        <!-- Add Custom Rule -->
-        <div class="section">
-            <div class="section-title">添加自定义规则</div>
-            <div class="add-rule-form">
-                <div class="form-group">
-                    <label>规则名称</label>
-                    <input type="text" id="ruleName" placeholder="例：替换空格">
+                <!-- Header Tools -->
+                <div class="section">
+                    <div class="section-title">标题层级工具</div>
+                    <div class="add-rule-form">
+                        <div class="form-group">
+                            <label>调整级别 (N)</label>
+                            <input type="number" id="headerLevelN" min="1" max="5" value="1" placeholder="1-5">
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-secondary" style="flex:1; font-size: 0.85em; padding: 10px 12px;" onclick="addHeaderRule('promote')">⬆️ 提升 N 级</button>
+                            <button class="btn btn-secondary" style="flex:1; font-size: 0.85em; padding: 10px 12px;" onclick="addHeaderRule('demote')">⬇️ 降低 N 级</button>
+                        </div>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 0.8em; color: var(--text-secondary);">
+                        快速生成用于批量调整标题层级的规则。
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>正则表达式</label>
-                    <input type="text" id="rulePattern" placeholder="例：\s+">
-                </div>
-                <div class="form-group">
-                    <label>替换内容</label>
-                    <input type="text" id="ruleReplacement" placeholder="例：-">
-                </div>
-                <button class="btn btn-primary" onclick="addCustomRule()">添加规则</button>
-            </div>
-        </div>
 
-        <!-- Global Settings -->
-        <div class="section">
-            <div class="section-title">全局设置</div>
-            <div class="rule-card">
-                <label class="toggle">
-                    <input type="checkbox" id="protectCode" checked onchange="updateOutputAndPreview({ silent: true })">
-                    <span class="toggle-slider"></span>
-                </label>
-                <div class="rule-info" style="display: flex; align-items: center; gap: 8px;">
-                    <div class="rule-name" style="margin-bottom: 0;">保护代码块</div>
-                    <div class="tooltip-container">
-                        <span class="info-icon">i</span>
-                        <div class="tooltip">
-                            <div class="tooltip-title">保护代码块</div>
-                            <div>开启后，将自动忽略被反引号包裹的内容（包括行内代码 <code>`...`</code> 和代码块 <code>```...```</code>），防止其被规则误修改。
-                            </div>
-                            <div class="tooltip-example">
-                                <div class="tooltip-example-label">示例：</div>
-                                <div class="tooltip-code-block">`const a = 1;` 将保持原样，不会被应用任何替换规则。</div>
+                <!-- Add Custom Rule -->
+                <div class="section">
+                    <div class="section-title">添加自定义规则</div>
+                    <div class="add-rule-form">
+                        <div class="form-group">
+                            <label>规则名称</label>
+                            <input type="text" id="ruleName" placeholder="例：替换空格">
+                        </div>
+                        <div class="form-group">
+                            <label>正则表达式</label>
+                            <input type="text" id="rulePattern" placeholder="例：\s+">
+                        </div>
+                        <div class="form-group">
+                            <label>替换内容</label>
+                            <input type="text" id="ruleReplacement" placeholder="例：-">
+                        </div>
+                        <button class="btn btn-primary" onclick="addCustomRule()" style="width: 100%;">添加规则</button>
+                    </div>
+                </div>
+
+                <!-- Global Settings -->
+                <div class="section">
+                    <div class="section-title">全局设置</div>
+                    <div class="rule-card">
+                        <label class="toggle">
+                            <input type="checkbox" id="protectCode" checked onchange="updateOutputAndPreview({ silent: true })">
+                            <span class="toggle-slider"></span>
+                        </label>
+                        <div class="rule-info" style="display: flex; align-items: center; gap: 8px;">
+                            <div class="rule-name" style="margin-bottom: 0;">保护代码块</div>
+                            <div class="tooltip-container">
+                                <span class="info-icon">i</span>
+                                <div class="tooltip">
+                                    <div class="tooltip-title">保护代码块</div>
+                                    <div>开启后，将自动忽略被反引号包裹的内容（包括行内代码 <code>`...`</code> 和代码块 <code>```...```</code>），防止其被规则误修改。
+                                    </div>
+                                    <div class="tooltip-example">
+                                        <div class="tooltip-example-label">示例：</div>
+                                        <div class="tooltip-code-block">`const a = 1;` 将保持原样，不会被应用任何替换规则。</div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Active Rules -->
+                <div class="section">
+                    <div class="section-title">当前规则</div>
+                    <div class="rules-list" id="rulesList"></div>
+                </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- Active Rules -->
-        <div class="section">
-            <div class="section-title">当前规则</div>
-            <div class="rules-list" id="rulesList"></div>
-        </div>
+        <!-- Resize Handle -->
+        <div class="resize-handle" id="resizeHandle"></div>
 
-        <!-- Input/Output -->
-        <div class="section">
-            <div class="section-title">输入文本</div>
-            <textarea id="input" placeholder="在此输入需要转换的文本..." oninput="handleInputChange()"></textarea>
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="convert()">🔄 执行转换</button>
-                <button class="btn btn-secondary" onclick="clearInput()">清空输入</button>
+        <!-- Right Main Panel -->
+        <main class="main-panel">
+            <div class="tab-bar">
+                <button class="tab-btn active" onclick="switchTab('input', this)">输入文本</button>
+                <button class="tab-btn" onclick="switchTab('output', this)">输出结果</button>
+                <button class="tab-btn" onclick="switchTab('preview', this)">Markdown 预览</button>
+                <div class="tab-actions">
+                    <button class="btn btn-primary" style="padding: 8px 16px; font-size: 0.85em;" onclick="convert()">🔄 转换</button>
+                    <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85em;" onclick="clearInput()">清空</button>
+                    <button class="btn btn-success" style="padding: 8px 16px; font-size: 0.85em;" onclick="copyToClipboard()">📋 复制</button>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 / ☀️</button>
+                </div>
             </div>
-        </div>
 
-        <div class="section">
-            <div class="section-title">输出结果</div>
-            <textarea id="output" readonly placeholder="转换结果将显示在这里..."></textarea>
-            <div class="button-group">
-                <button class="btn btn-success" onclick="copyToClipboard()">📋 复制结果</button>
+            <div id="tab-input" class="tab-content active">
+                <textarea id="input" placeholder="在此输入需要转换的文本..." oninput="handleInputChange()"></textarea>
             </div>
-        </div>
 
-        <div class="section">
-            <div class="section-title">Markdown 预览</div>
-            <div id="preview" class="markdown-preview">实时渲染中...</div>
-        </div>
+            <div id="tab-output" class="tab-content">
+                <textarea id="output" readonly placeholder="转换结果将显示在这里..."></textarea>
+            </div>
+
+            <div id="tab-preview" class="tab-content">
+                <div id="preview" class="markdown-preview">实时渲染中...</div>
+            </div>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
@@ -851,6 +1006,14 @@
             renderRules();
             setupMarkdown();
             updateOutputAndPreview({ silent: true });
+        }
+
+        // Tab switching
+        function switchTab(tabName, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+            document.getElementById('tab-' + tabName).classList.add('active');
+            btn.classList.add('active');
         }
 
         // Save and load input text
@@ -1249,6 +1412,58 @@
             div.textContent = text;
             return div.innerHTML;
         }
+
+        // Tooltip positioning (fixed position to avoid sidebar overflow clipping)
+        document.addEventListener('mouseenter', function(e) {
+            if (e.target.classList && e.target.classList.contains('info-icon')) {
+                const tooltip = e.target.nextElementSibling || e.target.parentElement.querySelector('.tooltip');
+                if (!tooltip) return;
+                const rect = e.target.getBoundingClientRect();
+                tooltip.style.top = (rect.bottom + 8) + 'px';
+                tooltip.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - 330)) + 'px';
+                tooltip.classList.add('visible');
+            }
+        }, true);
+        document.addEventListener('mouseleave', function(e) {
+            if (e.target.classList && e.target.classList.contains('info-icon')) {
+                const tooltip = e.target.nextElementSibling || e.target.parentElement.querySelector('.tooltip');
+                if (tooltip) tooltip.classList.remove('visible');
+            }
+        }, true);
+
+        // Resize handle drag logic
+        (function() {
+            const handle = document.getElementById('resizeHandle');
+            const sidebar = document.querySelector('.sidebar');
+            let isDragging = false;
+
+            // Restore saved width
+            const savedWidth = localStorage.getItem('sidebarWidth');
+            if (savedWidth) sidebar.style.width = savedWidth + 'px';
+
+            handle.addEventListener('mousedown', function(e) {
+                isDragging = true;
+                handle.classList.add('dragging');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+                e.preventDefault();
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                const newWidth = Math.min(Math.max(e.clientX, 280), window.innerWidth - 400);
+                sidebar.style.width = newWidth + 'px';
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (!isDragging) return;
+                isDragging = false;
+                handle.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                localStorage.setItem('sidebarWidth', parseInt(sidebar.style.width));
+            });
+        })();
 
         // Initialize on load
         init();
