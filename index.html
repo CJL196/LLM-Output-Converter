@@ -1178,7 +1178,25 @@
                 return;
             }
 
-            preview.innerHTML = marked.parse(markdownText || '');
+            // Protect math blocks from marked's line-break processing.
+            // marked with breaks:true inserts <br> on every newline, which splits
+            // multi-line $$ blocks across separate DOM text nodes and breaks KaTeX
+            // delimiter matching. We replace math with placeholders first.
+            const mathBlocks = [];
+            const protectedText = (markdownText || '').replace(
+                /(\$\$[\s\S]*?\$\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\)|\$[^$\n]+?\$)/g,
+                (match) => {
+                    mathBlocks.push(match);
+                    return `MATHPLACEHOLDER_${mathBlocks.length - 1}_END`;
+                }
+            );
+
+            let html = marked.parse(protectedText);
+
+            // Restore math blocks (use function form to avoid $& substitution issues)
+            html = html.replace(/MATHPLACEHOLDER_(\d+)_END/g, (_, i) => mathBlocks[parseInt(i, 10)]);
+
+            preview.innerHTML = html;
 
             if (window.renderMathInElement) {
                 renderMathInElement(preview, {
